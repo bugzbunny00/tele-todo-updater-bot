@@ -1,0 +1,34 @@
+export default {
+  async fetch(request, env, ctx) {
+    if (request.method === "GET") {
+      return new Response("Telegram task bot version 1 is running.", { status: 200 });
+    }
+
+    if (request.method !== "POST") {
+      return new Response("Method not allowed", { status: 405 });
+    }
+
+    let update;
+    try {
+      update = await request.json();
+    } catch (err) {
+      return new Response("bad json", { status: 400 });
+    }
+
+    const chatId = update?.message?.chat?.id;
+    const text = update?.message?.text;
+
+    if (chatId && text === "/start") {
+      // fire off the reply, but don't let it block our response to Telegram
+      ctx.waitUntil(
+        fetch(`https://api.telegram.org/bot${env.BOT_TOKEN}/sendMessage`, {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ chat_id: chatId, text: "hello" }),
+        })
+      );
+    }
+
+    return new Response("ok", { status: 200 });
+  },
+};

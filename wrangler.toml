@@ -1,0 +1,44 @@
+name = "telegram-task-bot"
+main = "src/index.js"
+compatibility_date = "2024-11-01"
+
+# ---- D1 database binding ----
+# After running `wrangler d1 create task_bot_db`, paste the printed
+# database_id below.
+[[d1_databases]]
+binding = "DB"
+database_name = "task_bot_db"
+database_id = "135de0da-0372-47db-8624-896fc2505bcf"
+
+# ---- Plain (non-secret) config ----
+[vars]
+# If "true", only Telegram group admins can use the write commands
+# (add/remove tasks, readers, plan settings). Anyone can still mark
+# things done and use /status.
+ADMIN_ONLY = "false"
+
+# ---- Daily auto-advance for reading plans ----
+# Runs once a day and moves every chat's active reading plan to its
+# next day automatically. Time is in UTC. Adjust to taste — e.g.
+# "0 18 * * *" for 6pm UTC. Admins can always force it early with
+# /nextday regardless of this schedule.
+[triggers]
+crons = ["0 0 * * *"]
+
+# ---- Secrets (do NOT put these here) ----
+# Set with:
+#   wrangler secret put BOT_TOKEN
+#   wrangler secret put WEBHOOK_SECRET
+# BOT_TOKEN      = the token from @BotFather
+# WEBHOOK_SECRET = any random string you make up; used to verify
+#                  incoming requests really come from Telegram.
+
+# ---- Optional: serve the webhook from your own domain ----
+# You said you already have a Cloudflare domain. Uncomment and edit
+# this to expose the worker at e.g. https://bot.yourdomain.com instead
+# of the default workers.dev URL. The domain must already be on
+# Cloudflare (which yours is).
+#
+# routes = [
+#   { pattern = "bot.yourdomain.com/*", custom_domain = true }
+# ]
